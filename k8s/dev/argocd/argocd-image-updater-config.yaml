@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-image-updater-config
+data:
+  interval: "2m"
+  registries.conf: |
+    registries:
+    - name: Local Registry
+      prefix: localhost:31000
+      api_url: http://registry-registry-server.docker-registry.svc.cluster.local:5000
+      default: true
+      insecure: true

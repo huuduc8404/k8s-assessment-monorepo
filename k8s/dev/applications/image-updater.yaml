@@ -1,0 +1,30 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: apps-image-updater
+  namespace: argocd
+spec:
+  writeBackConfig:
+    method: "argocd"
+  commonUpdateSettings:
+    updateStrategy: "digest"
+    forceUpdate: false
+  applicationRefs:
+    - namePattern: "frontend"
+      images:
+        - alias: "frontend"
+          imageName: "localhost:31000/frontend:latest"
+          commonUpdateSettings:
+            updateStrategy: "digest"
+          manifestTargets:
+            kustomize:
+              name: "localhost:31000/frontend"
+    - namePattern: "backend"
+      images:
+        - alias: "backend"
+          imageName: "localhost:31000/backend:latest"
+          commonUpdateSettings:
+            updateStrategy: "digest"
+          manifestTargets:
+            kustomize:
+              name: "localhost:31000/backend"

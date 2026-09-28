@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jenkins
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: jenkins
+    repoURL: https://charts.jenkins.io
+    targetRevision: 5.9.64
+    helm:
+      values: |
+        controller:
+          ingress:
+            enabled: true
+            hostName: jenkins.localhost.direct
+          JCasC:
+            defaultConfig: true
+            authorizationStrategy: |-
+              loggedInUsersCanDoAnything:
+                allowAnonymousRead: true
+  ignoreDifferences:
+  - group: ""
+    kind: Secret
+    name: jenkins
+    jsonPointers:
+    - /data
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: jenkins
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      enabled: false
+    syncOptions:
+    - ServerSideApply=true
+    - RespectIgnoreDifferences=true
+    - CreateNamespace=true

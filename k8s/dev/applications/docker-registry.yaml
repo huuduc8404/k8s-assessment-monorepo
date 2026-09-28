@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: docker-registry
+spec:
+  project: default
+  source:
+    repoURL: https://helm.joxit.dev
+    targetRevision: 1.1.4
+    helm:
+      values: |
+        global:
+          name: registry
+        ui:
+          ingress:
+            enabled: 'true'
+            host: registry.localhost.direct
+            ingressClassName: traefik
+          proxy: 'true'
+        registry:
+          enabled: 'true'
+          service:
+            type: NodePort
+            nodePort: '31000'
+    chart: docker-registry-ui
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: docker-registry
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      enabled: true
+    syncOptions:
+    - CreateNamespace=true
+    - RespectIgnoreDifferences=true

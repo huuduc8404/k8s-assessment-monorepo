@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    
+    environment {
+        REGISTRY = 'localhost:31000'
+        IMAGE_NAME = 'backend'
+        DOCKERFILE = 'backend/Dockerfile'
+        CONTEXT = 'backend'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}", "-f ${DOCKERFILE} ${CONTEXT}")
+                }
+            }
+        }
+        
+        stage('Push to Registry') {
+            steps {
+                script {
+                    docker.withRegistry("http://${REGISTRY}", '') {
+                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
+                        sh "docker tag ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} ${REGISTRY}/${IMAGE_NAME}:latest"
+                        sh "docker push ${REGISTRY}/${IMAGE_NAME}:latest"
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "Backend pipeline completed successfully"
+        }
+        failure {
+            echo "Backend pipeline failed"
+        }
+    }
+}
